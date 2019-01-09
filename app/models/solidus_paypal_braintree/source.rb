@@ -17,7 +17,7 @@ module SolidusPaypalBraintree
     scope(:with_payment_profile, -> { joins(:customer) })
     scope(:credit_card, -> { where(payment_type: CREDIT_CARD) })
 
-    delegate :last_4, :card_type, :expiration_month, :expiration_year, :email,
+    delegate :last_4, :card_type, :expiration_month, :expiration_year, :email, :cardholder_name,
       to: :braintree_payment_method, allow_nil: true
 
     # Aliases to match Spree::CreditCard's interface
@@ -25,7 +25,7 @@ module SolidusPaypalBraintree
     alias_method :month, :expiration_month
     alias_method :year, :expiration_year
     alias_method :cc_type, :card_type
-
+    alias_method :name, :cardholder_name
 
     # we are not currenctly supporting an "imported" flag
     def imported
@@ -80,6 +80,13 @@ module SolidusPaypalBraintree
       else
         "XXXX-XXXX-XXXX-#{last_digits.to_s.rjust(4, 'X')}"
       end
+    end
+
+    def gateway_customer_profile_id
+      braintree_payment_method.customer_id
+    end
+
+    def gateway_payment_profile_id
     end
 
     private
