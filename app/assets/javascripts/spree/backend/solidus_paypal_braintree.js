@@ -36,7 +36,10 @@ $(function() {
         if ($hostedFields.is(":visible") && !shouldSubmit) {
           e.preventDefault();
 
-          hostedFields.tokenize(function(err, payload) {
+          var cardholderName = $paymentForm.find('#cardholder-name').val();
+          hostedFields.tokenize({
+            cardholderName: cardholderName
+          }, function(err, payload) {
             if (err) {
               errorCallback(err);
             } else {
