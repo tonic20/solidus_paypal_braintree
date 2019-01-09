@@ -6,6 +6,11 @@
     <div class="input" id="card_number<%= id %>"></div>
   </div>
 
+  <div class="field">
+    <%= label_tag "cardholder_name#{id}", Spree::CreditCard.human_attribute_name(:name), class: "required" %>
+    <input id="cardholder-name" name="cardholderName" placeholder=""/>
+  </div>
+
   <div class="field" data-hook="card_expiration">
     <%= label_tag "card_expiry#{id}", Spree::CreditCard.human_attribute_name(:expiration), class: "required" %>
     <div class="input" id="card_expiry<%= id %>"></div>

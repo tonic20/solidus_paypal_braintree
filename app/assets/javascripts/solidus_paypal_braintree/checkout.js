@@ -40,7 +40,10 @@ $(function() {
           event.preventDefault();
           disableSubmit();
 
-          braintreeForm.tokenize(function(error, payload) {
+          var cardholderName = $paymentForm.find('#cardholder-name').val();
+          braintreeForm.tokenize({
+            cardholderName: cardholderName
+          }, function(error, payload) {
             if (error) {
               braintreeError(error);
             } else {
