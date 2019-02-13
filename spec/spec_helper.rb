@@ -22,6 +22,7 @@ require File.expand_path('dummy/config/environment.rb', __dir__)
 require "solidus_support/extension/feature_helper"
 require 'spree/testing_support/controller_requests'
 
+require 'byebug'
 require 'vcr'
 require 'webmock'
 require 'selenium-webdriver'
@@ -34,6 +35,8 @@ Dir[File.join(File.dirname(__FILE__), 'support/**/*.rb')].each { |f| require f }
 require 'solidus_paypal_braintree/factories'
 
 ApplicationController.prepend_view_path "spec/fixtures/views"
+
+FactoryBot.use_parent_strategy = false
 
 VCR.configure do |c|
   c.cassette_library_dir = "spec/fixtures/cassettes"
