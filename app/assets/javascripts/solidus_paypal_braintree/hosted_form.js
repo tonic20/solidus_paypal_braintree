@@ -17,17 +17,68 @@ SolidusPaypalBraintree.HostedForm.prototype._createHostedFields = function () {
   var opts = {
     client: this.client.getBraintreeInstance(),
 
+    styles: {
+      // styles for input fields
+      //https://developers.braintreepayments.com/guides/hosted-fields/styling/javascript/v3
+      "input": {
+        "font-size": "14px",
+        "font-family": "'CentraNo2', sans-serif"
+      },
+      "input::-webkit-input-placeholder": {
+        "color": "transparent"
+      },
+      "input:-ms-input-placeholder": {
+        "color": "transparent"
+      },
+      "input::-ms-input-placeholder": {
+        "color": "transparent"
+      },
+      "input::-moz-placeholder": {
+        "color": "transparent"
+      },
+      "input::placeholder": {
+        "color": "transparent"
+      },
+      ".expirationDate::-webkit-input-placeholder": {
+        "color": "#80325b",
+        "padding-top": "30px"
+      },
+      ".expirationDate:-ms-input-placeholder": {
+        "color": "#80325b",
+        "padding-top": "30px"
+      },
+      ".expirationDate::-ms-input-placeholder": {
+        "color": "#80325b",
+        "padding-top": "30px"
+      },
+      ".expirationDate::-moz-placeholder": {
+        "color": "#80325b",
+        "padding-top": "30px"
+      },
+      ".expirationDate::placeholder": {
+        "color": "#80325b",
+        "padding-top": "30px"
+      },
+      "input:not(:placeholder-shown)": {
+        "color": "#80325b",
+        "padding-top": "30px"
+      }
+    },
+
     fields: {
       number: {
-        selector: "#card_number" + this.paymentMethodId
+        selector: "#card_number" + this.paymentMethodId,
+        placeholder: "Card number"
       },
 
       cvv: {
-        selector: "#card_code" + this.paymentMethodId
+        selector: "#card_code" + this.paymentMethodId,
+        placeholder: "Card code"
       },
 
       expirationDate: {
-        selector: "#card_expiry" + this.paymentMethodId
+        selector: "#card_expiry" + this.paymentMethodId,
+        placeholder: "MM / YY",
       }
     }
   };

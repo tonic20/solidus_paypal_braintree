@@ -6,6 +6,7 @@ $(function() {
    * submit button. */
   function braintreeError (err) {
     SolidusPaypalBraintree.config.braintreeErrorHandle(err);
+    handleBraintreeErrors(err);
     enableSubmit();
   }
 
@@ -28,7 +29,9 @@ $(function() {
         $submitButton.attr("disabled", false).removeClass("disabled").addClass("primary");
       }, 100);
     } else {
-      $submitButton.attr("disabled", false).removeClass("disabled").addClass("primary");
+      setTimeout(function () {
+        $submitButton.attr("disabled", false).removeClass("disabled").addClass("primary");
+      }, 100);
     }
   }
 
@@ -39,6 +42,8 @@ $(function() {
   function addFormHook(braintreeForm, hostedField) {
     $paymentForm.on("submit",function(event) {
       var $field = $(hostedField);
+
+      $field.find('.input').removeClass('invalid')
 
       if ($field.is(":visible") && !$field.data("submitting")) {
         var $nonce = $("#payment_method_nonce", $field);
@@ -61,6 +66,40 @@ $(function() {
         }
       }
     });
+
+    braintreeForm.on('focus', function (event) {
+      var field = event.fields[event.emittedBy];
+      var label = findLabel(field);
+      label.addClass('focused').siblings('.input').removeClass('invalid')
+    });
+
+    braintreeForm.on('blur', function (event) {
+      var field = event.fields[event.emittedBy];
+      var label = findLabel(field);
+      if (field.isEmpty) {
+        label.removeClass('focused');
+      }
+    });
+    braintreeForm.on('empty', function (event) {
+      var field = event.fields[event.emittedBy];
+      if (!field.isFocused) {
+        findLabel(field).removeClass('focused').siblings('.input').removeClass('invalid')
+      }
+    });
+  }
+
+  function findLabel(field) {
+    return $hostedFields.find('label[for="' + field.container.id + '"]');
+  }
+
+  function handleBraintreeErrors(errors) {
+    var fields = Object.values((errors.details && errors.details.invalidFields) || {});
+    if (fields.length === 0) {
+      fields = $hostedFields.find('.input').toArray();
+    }
+    fields.map(function (field) {
+      $(field).addClass("invalid");
+    })
   }
 
   var $paymentForm = $("#checkout_form_payment");
