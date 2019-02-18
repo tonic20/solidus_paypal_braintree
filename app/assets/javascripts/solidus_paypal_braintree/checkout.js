@@ -69,27 +69,15 @@ $(function() {
 
     braintreeForm.on('focus', function (event) {
       var field = event.fields[event.emittedBy];
-      var label = findLabel(field);
-      label.addClass('focused').siblings('.input').removeClass('invalid')
+      $(field.container).removeClass('invalid')
     });
 
-    braintreeForm.on('blur', function (event) {
-      var field = event.fields[event.emittedBy];
-      var label = findLabel(field);
-      if (field.isEmpty) {
-        label.removeClass('focused');
-      }
-    });
     braintreeForm.on('empty', function (event) {
       var field = event.fields[event.emittedBy];
       if (!field.isFocused) {
-        findLabel(field).removeClass('focused').siblings('.input').removeClass('invalid')
+        $(field.container).removeClass('invalid');
       }
     });
-  }
-
-  function findLabel(field) {
-    return $hostedFields.find('label[for="' + field.container.id + '"]');
   }
 
   function handleBraintreeErrors(errors) {

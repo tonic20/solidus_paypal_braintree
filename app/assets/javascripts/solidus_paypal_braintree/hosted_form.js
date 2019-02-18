@@ -25,37 +25,22 @@ SolidusPaypalBraintree.HostedForm.prototype._createHostedFields = function () {
         "font-family": "'CentraNo2', sans-serif"
       },
       "input::-webkit-input-placeholder": {
-        "color": "transparent"
+        "color": "#80325b",
+        "padding-top": "30px"
       },
       "input:-ms-input-placeholder": {
-        "color": "transparent"
+        "color": "#80325b",
+        "padding-top": "30px"
       },
       "input::-ms-input-placeholder": {
-        "color": "transparent"
+        "color": "#80325b",
+        "padding-top": "30px"
       },
       "input::-moz-placeholder": {
-        "color": "transparent"
+        "color": "#80325b",
+        "padding-top": "30px"
       },
       "input::placeholder": {
-        "color": "transparent"
-      },
-      ".expirationDate::-webkit-input-placeholder": {
-        "color": "#80325b",
-        "padding-top": "30px"
-      },
-      ".expirationDate:-ms-input-placeholder": {
-        "color": "#80325b",
-        "padding-top": "30px"
-      },
-      ".expirationDate::-ms-input-placeholder": {
-        "color": "#80325b",
-        "padding-top": "30px"
-      },
-      ".expirationDate::-moz-placeholder": {
-        "color": "#80325b",
-        "padding-top": "30px"
-      },
-      ".expirationDate::placeholder": {
         "color": "#80325b",
         "padding-top": "30px"
       },
@@ -68,12 +53,12 @@ SolidusPaypalBraintree.HostedForm.prototype._createHostedFields = function () {
     fields: {
       number: {
         selector: "#card_number" + this.paymentMethodId,
-        placeholder: "Card number"
+        placeholder: "Credit Card Number"
       },
 
       cvv: {
         selector: "#card_code" + this.paymentMethodId,
-        placeholder: "Card code"
+        placeholder: "CVV"
       },
 
       expirationDate: {
