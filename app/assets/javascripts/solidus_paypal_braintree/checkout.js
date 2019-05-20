@@ -7,7 +7,7 @@ $(function() {
   function braintreeError (err) {
     SolidusPaypalBraintree.config.braintreeErrorHandle(err);
     handleBraintreeErrors(err);
-    enableSubmit();
+    if (!(err.status && err.status >= 400)) enableSubmit();
   }
 
   function enableSubmit() {
@@ -110,11 +110,12 @@ $(function() {
 
       var formInitializationSuccess = function(formObject) {
         addFormHook(formObject, field);
-      }
+        enableSubmit();
+      };
 
       return braintreeForm.initialize().then(formInitializationSuccess, braintreeError);
     });
 
-    $.when.apply($, fieldPromises).done(enableSubmit);
+    $.when.apply($, fieldPromises)
   }
 });
