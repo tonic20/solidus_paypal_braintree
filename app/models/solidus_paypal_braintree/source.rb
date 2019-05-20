@@ -17,15 +17,8 @@ module SolidusPaypalBraintree
     scope(:with_payment_profile, -> { joins(:customer) })
     scope(:credit_card, -> { where(payment_type: CREDIT_CARD) })
 
-    delegate :last_4, :card_type, :expiration_month, :expiration_year, :email, :cardholder_name,
-      to: :braintree_payment_method, allow_nil: true
-
-    # Aliases to match Spree::CreditCard's interface
-    alias_method :last_digits, :last_4
-    alias_method :month, :expiration_month
-    alias_method :year, :expiration_year
-    alias_method :cc_type, :card_type
-    alias_method :name, :cardholder_name
+    alias_attribute :card_type, :cc_type
+    alias_attribute :last_4, :last_digits
 
     # we are not currenctly supporting an "imported" flag
     def imported
@@ -90,16 +83,6 @@ module SolidusPaypalBraintree
     end
 
     private
-
-    def braintree_payment_method
-      return unless braintree_client
-      @braintree_payment_method ||= protected_request do
-        braintree_client.payment_method.find(token)
-      end
-    rescue ActiveMerchant::ConnectionError, ArgumentError => e
-      Rails.logger.warn("#{e}: token unknown or missing for #{inspect}")
-      nil
-    end
 
     def braintree_client
       @braintree_client ||= payment_method.try(:braintree)
