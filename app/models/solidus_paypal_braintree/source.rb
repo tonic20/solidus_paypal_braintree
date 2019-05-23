@@ -16,9 +16,15 @@ module SolidusPaypalBraintree
 
     scope(:with_payment_profile, -> { joins(:customer) })
     scope(:credit_card, -> { where(payment_type: CREDIT_CARD) })
+    delegate :expiration_month, :expiration_year, :email, :cardholder_name,
+      to: :braintree_payment_method, allow_nil: true
 
     alias_attribute :card_type, :cc_type
     alias_attribute :last_4, :last_digits
+
+    alias_method :month, :expiration_month
+    alias_method :year, :expiration_year
+    alias_method :name, :cardholder_name
 
     # we are not currenctly supporting an "imported" flag
     def imported
