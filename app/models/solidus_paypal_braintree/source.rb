@@ -16,7 +16,7 @@ module SolidusPaypalBraintree
 
     scope(:with_payment_profile, -> { joins(:customer) })
     scope(:credit_card, -> { where(payment_type: CREDIT_CARD) })
-    delegate :expiration_month, :expiration_year, :email, :cardholder_name,
+    delegate :expiration_month, :expiration_year, :cardholder_name,
       to: :braintree_payment_method, allow_nil: true
 
     alias_attribute :card_type, :cc_type
@@ -91,7 +91,7 @@ module SolidusPaypalBraintree
     private
 
     def braintree_payment_method
-      return unless braintree_client
+      return unless braintree_client && credit_card?
       @braintree_payment_method ||= protected_request do
         braintree_client.payment_method.find(token)
       end
