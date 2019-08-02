@@ -60,16 +60,32 @@ $(function() {
             cardholderName: cardholderValue
           }, function(error, payload) {
             if (error) {
-              if (cardholderValue.length == 0) {
+              if (cardholderValue.length == 0 && typeof error.details !== 'undefined') {
                 error.details.invalidFieldKeys.push("cardholderName");
                 error.details.invalidFields["cardholderName"] = cardholderName[0];
               }
               braintreeError(error);
             } else {
-              $nonce.val(payload.nonce);
-              $ccType.val(payload.details.cardType);
-              $lastDigits.val(payload.details.lastFour);
-              $paymentForm.submit();
+              if (cardholderValue.length == 0) {
+                error = {
+                  name: "BraintreeError",
+                  code: "HOSTED_FIELDS_FIELDS_INVALID",
+                  message: BraintreeError.HOSTED_FIELDS_FIELDS_INVALID,
+                  type: "CUSTOMER",
+                  details: {
+                    invalidFieldKeys: ["cardholderName"],
+                    invalidFields: {
+                      cardholderName: cardholderName[0]
+                    }
+                  }
+                };
+                braintreeError(error);
+              } else {
+                $nonce.val(payload.nonce);
+                $ccType.val(payload.details.cardType);
+                $lastDigits.val(payload.details.lastFour);
+                $paymentForm.submit();
+              }
             }
           });
         }
@@ -93,6 +109,7 @@ $(function() {
     var fields = Object.values((errors.details && errors.details.invalidFields) || {});
     if (fields.length === 0) {
       fields = $hostedFields.find('.input').toArray();
+      fields.push($paymentForm.find('#cardholderName'));
     }
     fields.map(function (field) {
       $(field).addClass("invalid");
