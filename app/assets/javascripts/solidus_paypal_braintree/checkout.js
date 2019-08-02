@@ -54,11 +54,16 @@ $(function() {
           event.preventDefault();
           disableSubmit();
 
-          var cardholderName = $paymentForm.find('#cardholder-name').val();
+          var cardholderName = $paymentForm.find('#cardholderName');
+          var cardholderValue = cardholderName.val();
           braintreeForm.tokenize({
-            cardholderName: cardholderName
+            cardholderName: cardholderValue
           }, function(error, payload) {
             if (error) {
+              if (cardholderValue.length == 0) {
+                error.details.invalidFieldKeys.push("cardholderName");
+                error.details.invalidFields["cardholderName"] = cardholderName[0];
+              }
               braintreeError(error);
             } else {
               $nonce.val(payload.nonce);
