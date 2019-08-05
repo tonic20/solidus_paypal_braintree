@@ -106,7 +106,6 @@ $(function() {
   }
 
   function handleBraintreeErrors(errors) {
-    console.log(errors);
     var fields = Object.values((errors.details && errors.details.invalidFields) || {});
     if (fields.length === 0) {
       fields = $hostedFields.find('.input').toArray();
