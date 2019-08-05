@@ -54,8 +54,8 @@ $(function() {
           event.preventDefault();
           disableSubmit();
 
-          var cardholderName = $paymentForm.find('#cardholderName');
-          var cardholderValue = cardholderName.val();
+          var cardholderName = $paymentForm.find('#cardholderNameContainer');
+          var cardholderValue = cardholderName.find('input').val();
           braintreeForm.tokenize({
             cardholderName: cardholderValue
           }, function(error, payload) {
@@ -109,7 +109,7 @@ $(function() {
     var fields = Object.values((errors.details && errors.details.invalidFields) || {});
     if (fields.length === 0) {
       fields = $hostedFields.find('.input').toArray();
-      fields.push($paymentForm.find('#cardholderName'));
+      fields.push($paymentForm.find('#cardholderNameContainer'));
     }
     fields.map(function (field) {
       $(field).addClass("invalid");
