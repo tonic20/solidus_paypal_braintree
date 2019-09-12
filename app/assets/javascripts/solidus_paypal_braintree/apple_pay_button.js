@@ -4,10 +4,11 @@
  * @constructor
  * @param {object} element - The DOM element of your Apple Pay button
  */
-SolidusPaypalBraintree.ApplepayButton = function(element, applepayOptions) {
+SolidusPaypalBraintree.ApplepayButton = function(element, applepayOptions, options) {
   this._element = element;
   this._applepayOptions = applepayOptions || {};
   this._client = null;
+  this._options = options || {};
 
   if(!this._element) {
     throw new Error("Element for the Apple Pay button must be present on the page");
@@ -94,25 +95,41 @@ SolidusPaypalBraintree.ApplepayButton.prototype.tokenize = function (session, pa
 };
 
 SolidusPaypalBraintree.ApplepayButton.prototype._createTransaction = function (session, payment, payload) {
+  const onTransactionSuccess = this._options.onTransactionSuccess;
+  const transactionsUrl = this._options.transactionsUrl || SolidusPaypalBraintree.config.paths.transactions;
+
   Spree.ajax({
     data: this._transactionParams(payload, payment.shippingContact),
     dataType: 'json',
     type: 'POST',
-    url: SolidusPaypalBraintree.config.paths.transactions,
+    url: transactionsUrl,
     success: function(response) {
       session.completePayment(ApplePaySession.STATUS_SUCCESS);
-      window.location.replace(response.redirectUrl);
+      if(onTransactionSuccess) {
+        onTransactionSuccess(response);
+      } else {
+        window.location.replace(response.redirectUrl);
+      }
     },
     error: function(xhr) {
-      if (xhr.status === 422) {
-        var errors = xhr.responseJSON.errors;
+      var errorText = BraintreeError.DEFAULT;
 
-        if (errors && errors.Address) {
-          session.completePayment(ApplePaySession.STATUS_INVALID_SHIPPING_POSTAL_ADDRESS);
-        } else {
-          session.completePayment(ApplePaySession.STATUS_FAILURE);
+      if (xhr.responseJSON && xhr.responseJSON.errors) {
+        var errors = [];
+        $.each(xhr.responseJSON.errors, function(key, values) {
+          $.each(values, function(index, value) {
+            errors.push(key + " " + value)
+          });
+        });
+
+        if (errors.length > 0) {
+          errorText = errors.join(", ");
         }
       }
+
+      session.completePayment(ApplePaySession.STATUS_FAILURE);
+      console.error("Error submitting transaction: " + errorText);
+      SolidusPaypalBraintree.showError(errorText);
     }
   });
 };
