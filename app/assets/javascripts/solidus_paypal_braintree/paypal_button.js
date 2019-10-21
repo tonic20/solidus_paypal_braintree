@@ -38,7 +38,7 @@ SolidusPaypalBraintree.PaypalButton.prototype.initializeCallback = function() {
 
   paypal.Button.render({
     style: {
-      color: 'silver',
+      color: 'gold',
       shape: 'rect',
       label: 'paypal',
       tagline: false,
