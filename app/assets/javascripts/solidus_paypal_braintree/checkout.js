@@ -103,28 +103,6 @@ $(function() {
         $(field.container).removeClass('invalid');
       }
     });
-
-    braintreeForm.on('validityChange', function (event) {
-      checkValidation(event.fields);
-    });
-
-    $paymentForm.find('#cardholderNameContainer').find('input')
-      .on('input', function () {
-        checkValidation(braintreeForm.getState().fields);
-      });
-  }
-
-  function checkValidation(formFields) {
-    var cardholder = $paymentForm.find('#cardholderNameContainer').find('input').val();
-    var formValid = Object.keys(formFields).every(function (key) {
-      return formFields[key].isValid;
-    });
-
-    if (formValid && cardholder.length > 0) {
-      enableSubmit();
-    } else {
-      disableSubmit();
-    }
   }
 
   function handleBraintreeErrors(errors) {
@@ -154,6 +132,7 @@ $(function() {
 
       var formInitializationSuccess = function(formObject) {
         addFormHook(formObject, field);
+        enableSubmit();
       };
 
       return braintreeForm.initialize().then(formInitializationSuccess, braintreeError);
