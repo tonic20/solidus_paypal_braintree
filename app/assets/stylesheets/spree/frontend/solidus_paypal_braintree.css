@@ -11,6 +11,18 @@ the installer will append this file to the app vendored assets here: 'vendor/ass
   padding: 5px 10px;
 }
 
+input#cardholder-name {
+  width: 96%;
+  border: 1px solid #d9d9db;
+  border-radius: 3px;
+  height: 30px;
+  padding: 5px 10px;
+}
+
+input#cardholder-name:focus {
+  outline: none;
+}
+
 .paypal-button-widget .paypal-button:hover {
   background: transparent;
 }

@@ -6,7 +6,8 @@ $(function() {
    * submit button. */
   function braintreeError (err) {
     SolidusPaypalBraintree.config.braintreeErrorHandle(err);
-    enableSubmit();
+    handleBraintreeErrors(err);
+    if (!(err.status && err.status >= 400)) enableSubmit();
   }
 
   function enableSubmit() {
@@ -28,7 +29,9 @@ $(function() {
         $submitButton.attr("disabled", false).removeClass("disabled").addClass("primary");
       }, 100);
     } else {
-      $submitButton.attr("disabled", false).removeClass("disabled").addClass("primary");
+      setTimeout(function () {
+        $submitButton.attr("disabled", false).removeClass("disabled").addClass("primary");
+      }, 100);
     }
   }
 
@@ -40,8 +43,12 @@ $(function() {
     $paymentForm.on("submit",function(event) {
       var $field = $(hostedField);
 
+      $field.find('.input').removeClass('invalid')
+
       if ($field.is(":visible") && !$field.data("submitting")) {
         var $nonce = $("#payment_method_nonce", $field);
+        var $ccType = $("#payment_source_cc_type", $field);
+        var $lastDigits = $("#payment_source_last_digits", $field);
 
         if ($nonce.length > 0 && $nonce.val() === "") {
           var client = braintreeForm._merchantConfigurationOptions._solidusClient;
@@ -49,13 +56,40 @@ $(function() {
           event.preventDefault();
           disableSubmit();
 
-          braintreeForm.tokenize(function(error, payload) {
+          var cardholderName = $paymentForm.find('#cardholderNameContainer');
+          var cardholderValue = cardholderName.find('input').val();
+          braintreeForm.tokenize({
+            cardholderName: cardholderValue
+          }, function(error, payload) {
             if (error) {
+              if (cardholderValue.length == 0 && typeof error.details !== 'undefined') {
+                error.details.invalidFieldKeys.push("cardholderName");
+                error.details.invalidFields["cardholderName"] = cardholderName[0];
+              }
               braintreeError(error);
               return;
             }
 
+            if (cardholderValue.length == 0) {
+              error = {
+                name: "BraintreeError",
+                code: "HOSTED_FIELDS_FIELDS_INVALID",
+                message: BraintreeError.HOSTED_FIELDS_FIELDS_INVALID,
+                type: "CUSTOMER",
+                details: {
+                  invalidFieldKeys: ["cardholderName"],
+                  invalidFields: {
+                    cardholderName: cardholderName[0]
+                  }
+                }
+              };
+              braintreeError(error);
+              return
+            }
+
             $nonce.val(payload.nonce);
+            $ccType.val(payload.details.cardType);
+            $lastDigits.val(payload.details.lastFour);
 
             if (!client.useThreeDSecure) {
               $paymentForm.submit();
@@ -80,6 +114,29 @@ $(function() {
         }
       }
     });
+
+    braintreeForm.on('focus', function (event) {
+      var field = event.fields[event.emittedBy];
+      $(field.container).removeClass('invalid')
+    });
+
+    braintreeForm.on('empty', function (event) {
+      var field = event.fields[event.emittedBy];
+      if (!field.isFocused) {
+        $(field.container).removeClass('invalid');
+      }
+    });
+  }
+
+  function handleBraintreeErrors(errors) {
+    var fields = Object.values((errors.details && errors.details.invalidFields) || {});
+    if (fields.length === 0) {
+      fields = $hostedFields.find('.input').toArray();
+      fields.push($paymentForm.find('#cardholderNameContainer'));
+    }
+    fields.map(function (field) {
+      $(field).addClass("invalid");
+    })
   }
 
   var $paymentForm = $("#checkout_form_payment");
@@ -98,11 +155,12 @@ $(function() {
 
       var formInitializationSuccess = function(formObject) {
         addFormHook(formObject, field);
-      }
+        enableSubmit();
+      };
 
       return braintreeForm.initialize().then(formInitializationSuccess, braintreeError);
     });
 
-    $.when.apply($, fieldPromises).done(enableSubmit);
+    $.when.apply($, fieldPromises)
   }
 });

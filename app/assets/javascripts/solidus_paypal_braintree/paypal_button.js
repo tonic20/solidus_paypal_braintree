@@ -32,7 +32,7 @@ SolidusPaypalBraintree.PaypalButton = function(element, paypalOptions, options) 
  * See {@link https://braintree.github.io/braintree-web/3.9.0/PayPal.html#tokenize}
  */
 SolidusPaypalBraintree.PaypalButton.prototype.initialize = function() {
-  this._client = new SolidusPaypalBraintree.createClient({useDataCollector: true, usePaypal: true});
+  this._client = new SolidusPaypalBraintree.createClient({useDataCollector: false, usePaypal: true});
 
   return this._client.initialize().then(this.initializeCallback.bind(this));
 };
@@ -40,10 +40,17 @@ SolidusPaypalBraintree.PaypalButton.prototype.initialize = function() {
 SolidusPaypalBraintree.PaypalButton.prototype.initializeCallback = function() {
   this._paymentMethodId = this._client.paymentMethodId;
 
+  this._element.style.display = "none";
+
   var render_options = {
     env: this._environment,
     locale: this.locale,
     style: this.style,
+
+    onEnter: function() {
+      this._element.style.display = "block";
+    }.bind(this),
+
     payment: function () {
       return this._client.getPaypalInstance().createPayment(this._paypalOptions);
     }.bind(this),
@@ -67,15 +74,21 @@ SolidusPaypalBraintree.PaypalButton.prototype._tokenizeCallback = function(token
     return;
   }
 
-  var params = this._transactionParams(payload);
+  const params = this._transactionParams(payload);
+  const onTransactionSuccess = this._options.onTransactionSuccess;
+  const transactionsUrl = this._options.transactionsUrl || SolidusPaypalBraintree.config.paths.transactions;
 
   return Spree.ajax({
-    url: SolidusPaypalBraintree.config.paths.transactions,
+    url: transactionsUrl,
     type: 'POST',
     dataType: 'json',
     data: params,
     success: function(response) {
-      window.location.href = response.redirectUrl;
+      if(onTransactionSuccess) {
+        onTransactionSuccess(response);
+      } else {
+        window.location.href = response.redirectUrl;
+      }
     },
     error: function(xhr) {
       var errorText = BraintreeError.DEFAULT;
@@ -107,7 +120,7 @@ SolidusPaypalBraintree.PaypalButton.prototype._tokenizeCallback = function(token
 SolidusPaypalBraintree.PaypalButton.prototype._transactionParams = function(payload) {
   return {
     "payment_method_id" : this._paymentMethodId,
-    "options": this._options,
+    "options": this._options.transactionOptions || {},
     "transaction" : {
       "email" : payload.details.email,
       "phone" : payload.details.phone,

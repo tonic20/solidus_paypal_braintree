@@ -11,7 +11,7 @@ $input-color: #5498DA !default;
 $brand-danger: #C60F13 !default;
 $brand-success: #9FC820 !default;
 
-.braintree-hosted-fields .input {
+.braintree-hosted-fields .input, input#cardholder-name {
   border: 1px solid $input-border-color;
   border-radius: $border-radius;
   color: $input-color;
@@ -25,4 +25,12 @@ $brand-success: #9FC820 !default;
   &.braintree-hosted-fields-valid {
     border-color: $brand-success;
   }
+}
+
+input#cardholder-name {
+  width: 100%;
+}
+
+input#cardholder-name:focus {
+  outline: none;
 }
