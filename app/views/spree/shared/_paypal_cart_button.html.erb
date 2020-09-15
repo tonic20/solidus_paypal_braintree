@@ -6,7 +6,7 @@
   var paypalOptions = {
     flow: '<%= SolidusPaypalBraintree::Gateway.first.preferred_paypal_flow %>',
     enableShippingAddress: true,
-    environment: '<%= Rails.env.production? ? "production" : "sandbox" %>',
+    environment: '<%= ENV['BRAINTREE_ENV'] || 'sandbox' %>',
     locale: '<%= paypal_button_preference(:paypal_button_locale, store: current_store) %>',
     style: {
       color: '<%= paypal_button_preference(:paypal_button_color, store: current_store) %>',
