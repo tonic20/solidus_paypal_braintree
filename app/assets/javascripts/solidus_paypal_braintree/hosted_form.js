@@ -27,30 +27,31 @@ SolidusPaypalBraintree.HostedForm.prototype._createHostedFields = function() {
       //https://developers.braintreepayments.com/guides/hosted-fields/styling/javascript/v3
       input: {
         "font-size": "14px",
-        "font-family": "'Montserrat', sans-serif"
+        "font-family": "sans-serif",
+        "color": "#262626"
       },
       "input::-webkit-input-placeholder": {
-        color: "#1f2427",
+        color: "#262626",
         "padding-top": "30px"
       },
       "input:-ms-input-placeholder": {
-        color: "#1f2427",
+        color: "#262626",
         "padding-top": "30px"
       },
       "input::-ms-input-placeholder": {
-        color: "#1f2427",
+        color: "#262626",
         "padding-top": "30px"
       },
       "input::-moz-placeholder": {
-        color: "#1f2427",
+        color: "#262626",
         "padding-top": "30px"
       },
       "input::placeholder": {
-        color: "#1f2427",
+        color: "#262626",
         "padding-top": "30px"
       },
       "input:not(:placeholder-shown)": {
-        color: "#1f2427",
+        color: "#262626",
         "padding-top": "30px"
       }
     },
