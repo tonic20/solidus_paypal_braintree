@@ -155,12 +155,11 @@ $(function() {
 
       var formInitializationSuccess = function(formObject) {
         addFormHook(formObject, field);
-        enableSubmit();
-      };
+      }
 
       return braintreeForm.initialize().then(formInitializationSuccess, braintreeError);
     });
 
-    $.when.apply($, fieldPromises)
+    $.when.apply($, fieldPromises).done(enableSubmit);
   }
 });
