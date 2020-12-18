@@ -2,7 +2,9 @@ require 'spec_helper'
 
 RSpec.describe SolidusPaypalBraintree::AVSResult do
   describe 'AVS response message' do
-    subject { described_class.build(transaction).to_hash['message'] }
+    subject { avs_result.to_hash['message'] }
+
+    let(:avs_result) { described_class.build(transaction) }
 
     context 'with avs_error_response_code' do
       let(:transaction) do
@@ -179,6 +181,19 @@ RSpec.describe SolidusPaypalBraintree::AVSResult do
         let(:codes) { %w(N M) }
         it { is_expected.to eq 'Street address does not match, but 5-digit postal code matches.' }
         it { expect(described_class.build(transaction).to_hash).to include('street_match' => 'N', 'postal_match' => 'M') }
+      end
+
+      context 'when street address result is B and postal code result is B' do
+        let(:codes) { %w(B B) }
+
+        it do
+          expect(avs_result).to have_attributes(
+            'code' => 'B',
+            'message' => 'Street address matches, but postal code not verified.',
+            'street_match' => 'B',
+            'postal_match' => 'B'
+          )
+        end
       end
 
       context 'street address response code is nil' do
