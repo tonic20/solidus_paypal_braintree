@@ -1,6 +1,6 @@
 //= require solidus_paypal_braintree/constants
-//= require solidus_paypal_braintree/client
 //= require solidus_paypal_braintree/promise
+//= require solidus_paypal_braintree/client
 //= require solidus_paypal_braintree/hosted_form
 
 $(function() {
@@ -70,30 +70,19 @@ $(function() {
   // SolidusPaypalBraintree payment methods have been configured.
   if (!$paymentForm.length || !$hostedFields.length) { return; }
 
-  $.when(
-    $.getScript("https://js.braintreegateway.com/web/3.34.0/js/client.min.js"),
-    $.getScript("https://js.braintreegateway.com/web/3.34.0/js/hosted-fields.min.js")
-  ).done(function() {
-    $hostedFields.each(function() {
-      var $this = $(this),
-          $radios = $("[name=card]", $this),
-          id = $this.data("payment-method-id");
+  $hostedFields.each(function() {
+    var $this = $(this);
+    var $radios = $paymentForm.find("[name=card]");
+    var id = $this.data("payment-method-id");
 
-      // If we have previous cards, init fields on change of radio button
-      if ($radios.length) {
-        $radios.on("change", function() {
-          if ($(this).val() == 'new') {
-            showForm(id);
-            initFields($this, id);
-          } else {
-            hideForm(id);
-          }
-        });
-      } else {
-        // If we don't have previous cards, init fields immediately
-        initFields($this, id);
-        showForm(id);
-      }
-    });
+    // If we have previous cards, init fields on change of radio button
+    if ($radios.length) {
+      $radios.on("change", function() {
+        $(this).val() == 'new' ? showForm(id) : hideForm(id);
+      });
+    } else {
+      // If we don't have previous cards, init fields immediately
+      showForm(id);
+    }
   });
 });
