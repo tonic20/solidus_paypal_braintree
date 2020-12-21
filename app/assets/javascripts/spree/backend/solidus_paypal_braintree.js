@@ -21,51 +21,6 @@ $(function() {
     $("#card_form" + id).hide();
   }
 
-  function addFormHook(braintreeForm, errorCallback) {
-    var shouldSubmit = false;
-
-    function submit(payload) {
-      shouldSubmit = true;
-
-      $("#payment_method_nonce", braintreeForm.hostedFields).val(payload.nonce);
-      $paymentForm.submit();
-    }
-
-    return function(hostedFields) {
-      $paymentForm.on("submit", function(e) {
-        if ($hostedFields.is(":visible") && !shouldSubmit) {
-          e.preventDefault();
-
-          var cardholderName = $paymentForm.find('#cardholder-name input').val();
-          hostedFields.tokenize({
-            cardholderName: cardholderName
-          }, function(err, payload) {
-            if (err) {
-              errorCallback(err);
-            } else {
-              submit(payload);
-            }
-          });
-        }
-      });
-    };
-  }
-
-  function initFields($container, id) {
-    function setHostedFieldsInstance(instance) {
-      hostedFieldsInstance = instance;
-      return instance;
-    }
-
-    if (hostedFieldsInstance === null) {
-      braintreeForm = new SolidusPaypalBraintree.createHostedForm(id);
-      braintreeForm.initialize().
-        then(setHostedFieldsInstance).
-        then(addFormHook(braintreeForm, onError)).
-        fail(onError);
-    }
-  }
-
   // exit early if we're not looking at the New Payment form, or if no
   // SolidusPaypalBraintree payment methods have been configured.
   if (!$paymentForm.length || !$hostedFields.length) { return; }

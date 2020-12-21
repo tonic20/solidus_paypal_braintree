@@ -142,7 +142,7 @@ $(function() {
   }
 
   var $hostedFields = $("[data-braintree-hosted-fields]");
-  var $paymentForm = $('#checkout_form_payment, #new_payment');
+  var $paymentForm = $('[role="braintree-fieldset"]').parents('form');
   var $submitButton = $paymentForm.find("[type='submit']");
 
   // If we're not using hosted fields, the form doesn't need to wait.
