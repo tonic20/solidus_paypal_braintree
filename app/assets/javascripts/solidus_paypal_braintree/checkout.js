@@ -62,9 +62,7 @@ $(function() {
             cardholderName: cardholderValue
           }, function(error, payload) {
             if (error) {
-              if (cardholderValue == undefined) {
-                window.alert(error.message);
-              } else if (cardholderValue.length == 0 && typeof error.details !== 'undefined') {
+              if (cardholderValue.length == 0 && typeof error.details !== 'undefined') {
                 error.details.invalidFieldKeys.push("cardholderName");
                 error.details.invalidFields["cardholderName"] = cardholderName[0];
               }
@@ -72,7 +70,7 @@ $(function() {
               return;
             }
 
-            if (cardholderValue !== undefined && cardholderValue.length == 0) {
+            if (cardholderValue.length == 0) {
               error = {
                 name: "BraintreeError",
                 code: "HOSTED_FIELDS_FIELDS_INVALID",
@@ -141,9 +139,9 @@ $(function() {
     })
   }
 
+  var $paymentForm = $("#checkout_form_payment");
   var $hostedFields = $("[data-braintree-hosted-fields]");
-  var $paymentForm = $('[role="braintree-fieldset"]').parents('form');
-  var $submitButton = $paymentForm.find("[type='submit']");
+  var $submitButton = $("input[type='submit']", $paymentForm);
 
   // If we're not using hosted fields, the form doesn't need to wait.
   if ($hostedFields.length > 0) {
