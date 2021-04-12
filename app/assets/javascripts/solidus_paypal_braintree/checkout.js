@@ -96,12 +96,15 @@ $(function() {
               return;
             }
 
-            threeDSecureOptions.nonce = payload.nonce;
-            threeDSecureOptions.bin = payload.details.bin;
-            threeDSecureOptions.onLookupComplete = function(data, next) {
-              next();
-            }
-            client._threeDSecureInstance.verifyCard(threeDSecureOptions, function(error, response) {
+            var checkout3DConfig = Object.assign(JSON.parse(JSON.stringify(threeDSecureOptions)), {
+              nonce: payload.nonce,
+              bin: payload.details.bin,
+              onLookupComplete: function(data, next) {
+                next();
+              }
+            });
+
+            client._threeDSecureInstance.verifyCard(checkout3DConfig, function(error, response) {
               if (error === null && (!response.liabilityShiftPossible || response.liabilityShifted)) {
                 $nonce.val(response.nonce);
                 $paymentForm.submit();
