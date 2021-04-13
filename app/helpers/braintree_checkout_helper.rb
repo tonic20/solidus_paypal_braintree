@@ -4,6 +4,6 @@ module BraintreeCheckoutHelper
   end
 
   def braintree_script(name, opts = {})
-    content_tag(:script, nil, { src: "https://js.braintreegateway.com/web/3.69.0/js/#{name}.min.js" }.merge!(opts))
+    content_tag(:script, nil, { src: "https://js.braintreegateway.com/web/3.76.2/js/#{name}.min.js" }.merge!(opts))
   end
 end

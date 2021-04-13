@@ -64,8 +64,8 @@ module SolidusPaypalBraintree
         private_key: preferred_private_key,
         http_open_timeout: preferred_http_open_timeout,
         http_read_timeout: preferred_http_read_timeout,
-        logger: logger
-      }
+        logger: logger,
+        three_d_secure: { required: true } }
     end
 
     # Create a payment and submit it for settlement all at once.
