@@ -49,6 +49,8 @@ $(function() {
         var $nonce = $("#payment_method_nonce", $field);
         var $ccType = $("#payment_source_cc_type", $field);
         var $lastDigits = $("#payment_source_last_digits", $field);
+        var $deviceData = $('#payment_source_device_data', $field);
+        var $3dsAuthId = $('#payment_source_three_d_secure_authentication_id', $field);
 
         if ($nonce.length > 0 && $nonce.val() === "") {
           var client = braintreeForm._merchantConfigurationOptions._solidusClient;
@@ -96,22 +98,27 @@ $(function() {
               return;
             }
 
-            var checkout3DConfig = Object.assign(JSON.parse(JSON.stringify(threeDSecureOptions)), {
-              nonce: payload.nonce,
-              bin: payload.details.bin,
-              onLookupComplete: function(data, next) {
-                next();
-              }
-            });
+            client._createDataCollector().then(function(dataCollector) {
+              $deviceData.val(dataCollector.deviceData);
 
-            client._threeDSecureInstance.verifyCard(checkout3DConfig, function(error, response) {
-              if (error === null && (!response.liabilityShiftPossible || response.liabilityShifted)) {
-                $nonce.val(response.nonce);
-                $paymentForm.submit();
-              } else {
-                $nonce.val('');
-                braintreeError(error || { code: 'THREEDS_AUTHENTICATION_FAILED' });
-              }
+              var checkout3DConfig = Object.assign(JSON.parse(JSON.stringify(threeDSecureOptions)), {
+                nonce: payload.nonce,
+                bin: payload.details.bin,
+                onLookupComplete: function(data, next) {
+                  next();
+                }
+              });
+
+              client._threeDSecureInstance.verifyCard(checkout3DConfig, function(error, response) {
+                if (error === null && (!response.liabilityShiftPossible || response.liabilityShifted)) {
+                  $nonce.val(response.nonce);
+                  $3dsAuthId.val(response.threeDSecureInfo.threeDSecureAuthenticationId);
+                  $paymentForm.submit();
+                } else {
+                  $nonce.val('');
+                  braintreeError(error || { code: 'THREEDS_AUTHENTICATION_FAILED' });
+                }
+              });
             });
           });
         }

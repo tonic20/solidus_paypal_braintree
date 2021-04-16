@@ -26,6 +26,8 @@ module SolidusPaypalBraintree
     alias_method :year, :expiration_year
     alias_method :name, :cardholder_name
 
+    attr_accessor :device_data, :three_d_secure_authentication_id
+
     # we are not currenctly supporting an "imported" flag
     def imported
       false

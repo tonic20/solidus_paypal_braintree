@@ -82,7 +82,6 @@ module SolidusPaypalBraintree
           amount: dollars(money_cents),
           **transaction_options(source, gateway_options, true)
         )
-
         Response.build(result)
       end
     end
@@ -101,7 +100,6 @@ module SolidusPaypalBraintree
           amount: dollars(money_cents),
           **transaction_options(source, gateway_options)
         )
-
         Response.build(result)
       end
     end
@@ -323,6 +321,14 @@ module SolidusPaypalBraintree
         params[:payment_method_token] = source.token
       else
         params[:payment_method_nonce] = source.nonce
+      end
+
+      if source.device_data.present?
+        params[:device_data] = source.device_data
+      end
+
+      if source.three_d_secure_authentication_id.present?
+        params[:three_d_secure_authentication_id] = source.three_d_secure_authentication_id
       end
 
       if source.paypal?
