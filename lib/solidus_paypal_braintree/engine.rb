@@ -2,8 +2,14 @@ require 'solidus_support'
 
 module SolidusPaypalBraintree
   class Engine < Rails::Engine
+    include SolidusSupport::EngineExtensions::Decorators
+
     isolate_namespace SolidusPaypalBraintree
     engine_name 'solidus_paypal_braintree'
+
+    ActiveSupport::Inflector.inflections do |inflect|
+      inflect.acronym 'AVS'
+    end
 
     # use rspec for tests
     config.generators do |g|
@@ -12,16 +18,8 @@ module SolidusPaypalBraintree
 
     initializer "register_solidus_paypal_braintree_gateway", after: "spree.register.payment_methods" do |app|
       app.config.spree.payment_methods << SolidusPaypalBraintree::Gateway
-      Spree::PermittedAttributes.source_attributes.concat [:nonce, :payment_type]
+      Spree::PermittedAttributes.source_attributes.concat [:nonce, :payment_type, :device_data, :three_d_secure_authentication_id]
     end
-
-    def self.activate
-      Dir.glob(File.join(File.dirname(__FILE__), '../../app/**/*_decorator*.rb')) do |c|
-        Rails.configuration.cache_classes ? require(c) : load(c)
-      end
-    end
-
-    config.to_prepare(&method(:activate).to_proc)
 
     if SolidusSupport.frontend_available?
       config.assets.precompile += [

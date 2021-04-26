@@ -36,7 +36,7 @@ $(function() {
         if ($hostedFields.is(":visible") && !shouldSubmit) {
           e.preventDefault();
 
-          var cardholderName = $paymentForm.find('#cardholder-name').val();
+          var cardholderName = $paymentForm.find('#cardholder-name input').val();
           hostedFields.tokenize({
             cardholderName: cardholderName
           }, function(err, payload) {
@@ -71,8 +71,8 @@ $(function() {
   if (!$paymentForm.length || !$hostedFields.length) { return; }
 
   $.when(
-    $.getScript("https://js.braintreegateway.com/web/3.34.0/js/client.min.js"),
-    $.getScript("https://js.braintreegateway.com/web/3.34.0/js/hosted-fields.min.js")
+    $.getScript("https://js.braintreegateway.com/web/3.76.2/js/client.min.js"),
+    $.getScript("https://js.braintreegateway.com/web/3.76.2/js/hosted-fields.min.js")
   ).done(function() {
     $hostedFields.each(function() {
       var $this = $(this),

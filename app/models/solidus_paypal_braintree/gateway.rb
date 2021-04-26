@@ -35,6 +35,8 @@ module SolidusPaypalBraintree
     preference(:merchant_id, :string, default: nil)
     preference(:public_key,  :string, default: nil)
     preference(:private_key, :string, default: nil)
+    preference(:http_open_timeout, :integer, default: 60)
+    preference(:http_read_timeout, :integer, default: 60)
     preference(:merchant_currency_map, :hash, default: {})
     preference(:paypal_payee_email_map, :hash, default: {})
 
@@ -60,8 +62,10 @@ module SolidusPaypalBraintree
         merchant_id: preferred_merchant_id,
         public_key: preferred_public_key,
         private_key: preferred_private_key,
-        logger: logger
-      }
+        http_open_timeout: preferred_http_open_timeout,
+        http_read_timeout: preferred_http_read_timeout,
+        logger: logger,
+        three_d_secure: { required: true } }
     end
 
     # Create a payment and submit it for settlement all at once.
@@ -78,7 +82,6 @@ module SolidusPaypalBraintree
           amount: dollars(money_cents),
           **transaction_options(source, gateway_options, true)
         )
-
         Response.build(result)
       end
     end
@@ -97,7 +100,6 @@ module SolidusPaypalBraintree
           amount: dollars(money_cents),
           **transaction_options(source, gateway_options)
         )
-
         Response.build(result)
       end
     end
@@ -203,7 +205,7 @@ module SolidusPaypalBraintree
       return if source.token.present? || source.customer.present? || source.nonce.nil?
 
       result = braintree.customer.create(customer_profile_params(payment))
-      fail Spree::Core::GatewayError, result.message unless result.success?
+      fail ::Spree::Core::GatewayError, result.message unless result.success?
 
       customer = result.customer
 
@@ -319,6 +321,14 @@ module SolidusPaypalBraintree
         params[:payment_method_token] = source.token
       else
         params[:payment_method_nonce] = source.nonce
+      end
+
+      if source.device_data.present?
+        params[:device_data] = source.device_data
+      end
+
+      if source.three_d_secure_authentication_id.present?
+        params[:three_d_secure_authentication_id] = source.three_d_secure_authentication_id
       end
 
       if source.paypal?

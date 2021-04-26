@@ -41,7 +41,10 @@ RSpec.describe SolidusPaypalBraintree::CheckoutsController, type: :controller do
       allow(controller).to receive(:current_order) { order }
     end
 
-    context "when a payment is created successfully", vcr: { cassette_name: 'checkout/update' } do
+    context "when a payment is created successfully", vcr: {
+      cassette_name: 'checkout/update',
+      match_requests_on: [:braintree_uri]
+    } do
       it 'creates a payment' do
         expect { patch_update }.
           to change { order.payments.count }.
@@ -62,7 +65,7 @@ RSpec.describe SolidusPaypalBraintree::CheckoutsController, type: :controller do
       end
 
       it "is successful" do
-        expect(patch_update).to be_success
+        expect(patch_update).to be_successful
       end
 
       it "renders 'ok'" do
@@ -77,7 +80,7 @@ RSpec.describe SolidusPaypalBraintree::CheckoutsController, type: :controller do
 
       # No idea why this is the case, but I'm just adding the tests here
       it "is successful" do
-        expect(patch_update).to be_success
+        expect(patch_update).to be_successful
       end
 
       it "renders 'not-ok'" do

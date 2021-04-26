@@ -6,7 +6,8 @@ $(function() {
    * submit button. */
   function braintreeError (err) {
     SolidusPaypalBraintree.config.braintreeErrorHandle(err);
-    enableSubmit();
+    handleBraintreeErrors(err);
+    if (!(err.status && err.status >= 400)) enableSubmit();
   }
 
   function enableSubmit() {
@@ -28,7 +29,9 @@ $(function() {
         $submitButton.attr("disabled", false).removeClass("disabled").addClass("primary");
       }, 100);
     } else {
-      $submitButton.attr("disabled", false).removeClass("disabled").addClass("primary");
+      setTimeout(function () {
+        $submitButton.attr("disabled", false).removeClass("disabled").addClass("primary");
+      }, 100);
     }
   }
 
@@ -40,27 +43,110 @@ $(function() {
     $paymentForm.on("submit",function(event) {
       var $field = $(hostedField);
 
+      $field.find('.input').removeClass('invalid')
+
       if ($field.is(":visible") && !$field.data("submitting")) {
         var $nonce = $("#payment_method_nonce", $field);
+        var $ccType = $("#payment_source_cc_type", $field);
+        var $lastDigits = $("#payment_source_last_digits", $field);
+        var $deviceData = $('#payment_source_device_data', $field);
+        var $3dsAuthId = $('#payment_source_three_d_secure_authentication_id', $field);
 
         if ($nonce.length > 0 && $nonce.val() === "") {
+          var client = braintreeForm._merchantConfigurationOptions._solidusClient;
+
           event.preventDefault();
           disableSubmit();
 
-          var cardholderName = $paymentForm.find('#cardholder-name').val();
+          var cardholderName = $paymentForm.find('#cardholderNameContainer');
+          var cardholderValue = cardholderName.find('input').val();
           braintreeForm.tokenize({
-            cardholderName: cardholderName
+            cardholderName: cardholderValue
           }, function(error, payload) {
             if (error) {
+              if (cardholderValue.length == 0 && typeof error.details !== 'undefined') {
+                error.details.invalidFieldKeys.push("cardholderName");
+                error.details.invalidFields["cardholderName"] = cardholderName[0];
+              }
               braintreeError(error);
-            } else {
-              $nonce.val(payload.nonce);
-              $paymentForm.submit();
+              return;
             }
+
+            if (cardholderValue.length == 0) {
+              error = {
+                name: "BraintreeError",
+                code: "HOSTED_FIELDS_FIELDS_INVALID",
+                message: BraintreeError.HOSTED_FIELDS_FIELDS_INVALID,
+                type: "CUSTOMER",
+                details: {
+                  invalidFieldKeys: ["cardholderName"],
+                  invalidFields: {
+                    cardholderName: cardholderName[0]
+                  }
+                }
+              };
+              braintreeError(error);
+              return
+            }
+
+            $nonce.val(payload.nonce);
+            $ccType.val(payload.details.cardType);
+            $lastDigits.val(payload.details.lastFour);
+
+            if (!client.useThreeDSecure) {
+              $paymentForm.submit();
+              return;
+            }
+
+            client._createDataCollector().then(function(dataCollector) {
+              $deviceData.val(dataCollector.deviceData);
+
+              var checkout3DConfig = Object.assign(JSON.parse(JSON.stringify(threeDSecureOptions)), {
+                nonce: payload.nonce,
+                bin: payload.details.bin,
+                onLookupComplete: function(data, next) {
+                  next();
+                }
+              });
+
+              client._threeDSecureInstance.verifyCard(checkout3DConfig, function(error, response) {
+                if (error === null && (!response.liabilityShiftPossible || response.liabilityShifted)) {
+                  $nonce.val(response.nonce);
+                  $3dsAuthId.val(response.threeDSecureInfo.threeDSecureAuthenticationId);
+                  $paymentForm.submit();
+                } else {
+                  $nonce.val('');
+                  braintreeError(error || { code: 'THREEDS_AUTHENTICATION_FAILED' });
+                }
+              });
+            });
           });
         }
       }
     });
+
+    braintreeForm.on('focus', function (event) {
+      var field = event.fields[event.emittedBy];
+      $(field.container).removeClass('invalid')
+    });
+
+    braintreeForm.on('empty', function (event) {
+      var field = event.fields[event.emittedBy];
+      if (!field.isFocused) {
+        $(field.container).removeClass('invalid');
+      }
+    });
+  }
+
+  function handleBraintreeErrors(errors) {
+    var fields = Object.values((errors.details && errors.details.invalidFields) || {});
+    if (fields.length === 0) {
+      fields = $hostedFields.find('.input').toArray();
+      fields.push($paymentForm.find('#cardholderNameContainer'));
+    }
+    fields.map(function (field) {
+      $(field).addClass("invalid");
+    })
   }
 
   var $paymentForm = $("#checkout_form_payment");
