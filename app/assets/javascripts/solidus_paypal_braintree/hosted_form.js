@@ -53,7 +53,7 @@ SolidusPaypalBraintree.HostedForm.prototype._createHostedFields = function() {
     fields: {
       number: {
         selector: "#card_number" + this.paymentMethodId,
-        placeholder: "Credit Card Number"
+        placeholder: I18n.t('frontend.cc_form.placeholders.number')
       },
 
       cvv: {
@@ -63,7 +63,7 @@ SolidusPaypalBraintree.HostedForm.prototype._createHostedFields = function() {
 
       expirationDate: {
         selector: "#card_expiry" + this.paymentMethodId,
-        placeholder: "MM / YY"
+        placeholder: I18n.t('frontend.cc_form.placeholders.expiration_date')
       }
     }
   };
