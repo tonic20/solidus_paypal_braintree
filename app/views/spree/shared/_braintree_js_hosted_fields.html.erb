@@ -1,0 +1,15 @@
+<% unless local_assigns[:compact] %>
+<input type="hidden" name="<%= prefix %>[payment_type]" value="<%= SolidusPaypalBraintree::Source::CREDIT_CARD %>">
+<input type="hidden" data-hook="nonce_field" name="<%= prefix %>[nonce]">
+<% end %>
+
+<input type="hidden" data-hook="cc_type_field" name="<%= prefix %>[cc_type]">
+<input type="hidden" data-hook="last_digits_field" name="<%= prefix %>[last_digits]">
+
+<% if current_store.braintree_configuration.three_d_secure? %>
+  <input type="hidden" data-hook="device_data_field" name="<%= prefix %>[device_data]">
+  <input type="hidden" data-hook="three_d_secure_authentication_id_field" name="<%= prefix %>[three_d_secure_authentication_id]">
+  <script>
+    window.threeDSecureOptions = <%=raw braintree_3ds_options_for(order).to_json %>;
+  </script>
+<% end -%>

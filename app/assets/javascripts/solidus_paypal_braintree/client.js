@@ -203,3 +203,29 @@ SolidusPaypalBraintree.Client.prototype._createThreeDSecure = function() {
     console.log(error);
   });
 };
+
+SolidusPaypalBraintree.Client.prototype.verifyThreeDSecure = function(tokenizePayload) {
+  var client = this;
+
+  return new Promise(function(resolve, reject) {
+    if (!client.useThreeDSecure) return resolve(null);
+
+    client._createDataCollector().then(function(dataCollector) {
+      var checkout3DConfig = Object.assign(JSON.parse(JSON.stringify(threeDSecureOptions)), {
+        nonce: tokenizePayload.nonce,
+        bin: tokenizePayload.details.bin,
+        onLookupComplete: function(data, next) {
+          next();
+        }
+      });
+
+      client._threeDSecureInstance.verifyCard(checkout3DConfig, function(error, response) {
+        if (error === null && (!response.liabilityShiftPossible || response.liabilityShifted)) {
+          resolve({ response: response, dataCollector: dataCollector });
+        } else {
+          reject(error || { code: 'THREEDS_AUTHENTICATION_FAILED' });
+        }
+      });
+    }, function(err) { reject(err); });
+  });
+}

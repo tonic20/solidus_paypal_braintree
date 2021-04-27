@@ -4,15 +4,8 @@ module SolidusPaypalBraintree
   module BraintreeCheckoutHelper
     def braintree_3ds_options_for(order)
       ship_address = order.ship_address
-
-      {
-        nonce: nil, # populated after tokenization
-        bin: nil, # populated after tokenization
-        onLookupComplete: nil, # populated after tokenization
-        amount: order.total,
-        email: order.email,
-        billingAddress: braintree_billing_address(order),
-        additionalInformation: {
+      if ship_address
+        additional_information = {
           shippingGivenName: ship_address.firstname,
           shippingSurname: ship_address.lastname,
           shippingPhone: ship_address.phone,
@@ -25,11 +18,25 @@ module SolidusPaypalBraintree
             countryCodeAlpha2: ship_address.country&.iso,
           }
         }
+      else
+        additional_information = {}
+      end
+
+      {
+        nonce: nil, # populated after tokenization
+        bin: nil, # populated after tokenization
+        onLookupComplete: nil, # populated after tokenization
+        amount: order.total,
+        email: order.email,
+        billingAddress: braintree_billing_address(order),
+        additionalInformation: additional_information
       }
     end
 
     def braintree_billing_address(order)
       bill_address = order.bill_address
+      return {} unless bill_address
+
       {
         givenName: bill_address.firstname,
         surname: bill_address.lastname,

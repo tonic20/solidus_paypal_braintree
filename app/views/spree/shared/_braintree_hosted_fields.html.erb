@@ -26,14 +26,6 @@
   </div>
 
   <div class="clear"></div>
-  <input type="hidden" name="<%= prefix %>[payment_type]" value="<%= SolidusPaypalBraintree::Source::CREDIT_CARD %>">
-  <input type="hidden" id="payment_method_nonce" name="<%= prefix %>[nonce]">
-  <input type="hidden" id="payment_source_cc_type" name="<%= prefix %>[cc_type]">
-  <input type="hidden" id="payment_source_last_digits" name="<%= prefix %>[last_digits]">
-</div>
 
-<% if current_store.braintree_configuration.three_d_secure? %>
-  <script>
-    var threeDSecureOptions = <%=raw braintree_3ds_options_for(current_order).to_json %>;
-  </script>
-<% end -%>
+  <%= render 'spree/shared/braintree_js_hosted_fields', prefix: prefix, order: current_order %>
+</div>
