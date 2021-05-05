@@ -120,6 +120,10 @@ $(function() {
   }
 
   function handleBraintreeErrors(errors) {
+    if (typeof (Rollbar) !== 'undefined') {
+      Rollbar.error(errors);
+    }
+
     var fields = Object.values((errors.details && errors.details.invalidFields) || {});
     if (fields.length === 0) {
       fields = $hostedFields.find('.input').toArray();
