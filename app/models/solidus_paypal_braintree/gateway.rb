@@ -343,6 +343,10 @@ module SolidusPaypalBraintree
         params[:customer_id] = source.customer.braintree_customer_id
       end
 
+      if options[:payment_type] == :subscription
+        params[:transaction_source] = :recurring
+      end
+
       params
     end
 

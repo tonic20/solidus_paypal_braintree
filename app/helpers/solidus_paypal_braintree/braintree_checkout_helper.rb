@@ -29,7 +29,8 @@ module SolidusPaypalBraintree
         amount: order.total,
         email: order.email,
         billingAddress: braintree_billing_address(order),
-        additionalInformation: additional_information
+        additionalInformation: additional_information,
+        challengeRequested: true
       }
     end
 
