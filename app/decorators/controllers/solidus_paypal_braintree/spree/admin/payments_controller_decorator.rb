@@ -5,7 +5,7 @@ module SolidusPaypalBraintree
     module Admin
       module PaymentsControllerDecorator
         def self.prepended(base)
-          base.helper :braintree_admin
+          base.helper :braintree_admin, ::SolidusPaypalBraintree::BraintreeCheckoutHelper
         end
 
         ::Spree::Admin::PaymentsController.prepend self
