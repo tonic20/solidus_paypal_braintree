@@ -242,6 +242,14 @@ module SolidusPaypalBraintree
       braintree.client_token.generate
     end
 
+    # Generates a payment method nonce out of a vaulted payment method.
+    # The method is needed for 3DS payments performed with vaulted payment methods.
+    def generate_payment_method_nonce(source)
+      return if source.token.nil?
+
+      braintree.payment_method_nonce.create(source.token).payment_method_nonce
+    end
+
     def payment_profiles_supported?
       true
     end

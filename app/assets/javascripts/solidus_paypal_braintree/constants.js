@@ -4,6 +4,7 @@ SolidusPaypalBraintree = {
   config: {
     paths: {
       clientTokens: Spree.pathFor('solidus_paypal_braintree/client_token'),
+      paymentMethodNonce: Spree.pathFor('solidus_paypal_braintree/payment_method_nonce'),
       transactions: Spree.pathFor('solidus_paypal_braintree/transactions')
     },
 
