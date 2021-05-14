@@ -19,7 +19,7 @@ module SolidusPaypalBraintree
     end
 
     def source
-      @source ||= ::SolidusPaypalBraintree::Source.find(params[:payment_source_id])
+      @source ||= current_spree_user.wallet.find(params[:payment_source_id]).payment_source
     end
   end
 end
