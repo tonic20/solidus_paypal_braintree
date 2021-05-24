@@ -1,3 +1,3 @@
 module SolidusPaypalBraintree
-  VERSION = '1.0.0.paragon14'
+  VERSION = '1.0.0.paragon15'
 end
