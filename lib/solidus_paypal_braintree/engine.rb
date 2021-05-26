@@ -2,7 +2,7 @@ require 'solidus_support'
 
 module SolidusPaypalBraintree
   class Engine < Rails::Engine
-    include SolidusSupport::EngineExtensions::Decorators
+    include SolidusSupport::EngineExtensions
 
     isolate_namespace SolidusPaypalBraintree
     engine_name 'solidus_paypal_braintree'
@@ -32,8 +32,10 @@ module SolidusPaypalBraintree
     end
 
     initializer "register_solidus_paypal_braintree_gateway", after: "spree.register.payment_methods" do |app|
-      app.config.spree.payment_methods << SolidusPaypalBraintree::Gateway
-      Spree::PermittedAttributes.source_attributes.concat [:nonce, :payment_type, :device_data, :three_d_secure_authentication_id]
+      config.to_prepare do
+        app.config.spree.payment_methods << SolidusPaypalBraintree::Gateway
+        ::Spree::PermittedAttributes.source_attributes.concat [:nonce, :payment_type, :device_data, :three_d_secure_authentication_id]
+      end
     end
 
     if SolidusSupport.frontend_available?
@@ -52,11 +54,11 @@ module SolidusPaypalBraintree
 
       # We support Solidus v1.2, which requires some different markup in the
       # source form partial. This will take precedence over lib/views/backend.
-      paths["app/views"] << "lib/views/backend_v1.2" if SolidusSupport.solidus_gem_version < Gem::Version.new('1.3')
+      paths["app/views"] << "lib/views/backend_v1.2" if ::Spree.solidus_gem_version < Gem::Version.new('1.3')
 
       # Solidus v2.4 introduced preference field partials but does not ship a hash field type.
       # This is solved in Solidus v2.5.
-      if SolidusSupport.solidus_gem_version <= Gem::Version.new('2.5.0')
+      if ::Spree.solidus_gem_version <= Gem::Version.new('2.5.0')
         paths["app/views"] << "lib/views/backend_v2.4"
       end
 
