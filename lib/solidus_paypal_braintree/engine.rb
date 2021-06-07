@@ -16,25 +16,19 @@ module SolidusPaypalBraintree
       g.test_framework :rspec
     end
 
-    initializer 'solidus_paypal_braintree.setup_decorators' do |app|
-      if Rails.autoloaders.respond_to?(:main) && Rails.autoloaders.main.respond_to?(:ignore)
-        Rails.autoloaders.main.ignore(Dir.glob(File.join(File.dirname(__FILE__), '../../app/decorators')))
-        Rails.autoloaders.main.ignore(Dir.glob(File.join(File.dirname(__FILE__), '../../app/overrides')))
-      end
+    config.after_initialize do |app|
+      app.config.spree.payment_methods << SolidusPaypalBraintree::Gateway
+      ::Spree::PermittedAttributes.source_attributes.concat [:nonce, :payment_type, :device_data, :three_d_secure_authentication_id]
     end
 
     config.to_prepare do
-      ['../../app/decorators', '../../app/overrides'].flat_map do |dir|
-        Dir.glob(File.join(File.dirname(__FILE__), dir, '**/*.rb'))
-      end.sort.each do |file|
-        require_dependency file
+      if SolidusSupport.frontend_available?
+        ::Spree::CheckoutController.helper CheckoutHelper
+        ::Spree::OrdersController.helper CheckoutHelper
       end
-    end
 
-    initializer "register_solidus_paypal_braintree_gateway", after: "spree.register.payment_methods" do |app|
-      config.to_prepare do
-        app.config.spree.payment_methods << SolidusPaypalBraintree::Gateway
-        ::Spree::PermittedAttributes.source_attributes.concat [:nonce, :payment_type, :device_data, :three_d_secure_authentication_id]
+      if SolidusSupport.backend_available?
+        ::Spree::Admin::PaymentsController.helper AdminHelper, CheckoutHelper
       end
     end
 
@@ -64,7 +58,7 @@ module SolidusPaypalBraintree
 
       paths["app/views"] << "lib/views/backend"
 
-      initializer "solidus_paypal_braintree_admin_menu_item", after: "register_solidus_paypal_braintree_gateway" do |app|
+      initializer "solidus_paypal_braintree_admin_menu_item" do |app|
         Spree::Backend::Config.configure do |config|
           config.menu_items << config.class::MenuItem.new(
             [:braintree],
