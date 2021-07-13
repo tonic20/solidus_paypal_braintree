@@ -23,11 +23,18 @@ module SolidusPaypalBraintree
         additional_information = {}
       end
 
+      amount = case
+      when object.respond_to?(:order_total_after_store_credit) then object.order_total_after_store_credit
+      when object.respond_to?(:total) then object.total
+      else
+        '0.0'
+      end
+
       {
         nonce: nil, # populated after tokenization
         bin: nil, # populated after tokenization
         onLookupComplete: nil, # populated after tokenization
-        amount: object.respond_to?(:total) ? object.total : '0.0',
+        amount: amount,
         email: object.email,
         billingAddress: braintree_billing_address(object.bill_address),
         additionalInformation: additional_information,
