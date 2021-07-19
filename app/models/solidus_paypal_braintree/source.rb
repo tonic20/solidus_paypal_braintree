@@ -6,26 +6,27 @@ module SolidusPaypalBraintree
     APPLE_PAY = "ApplePayCard"
     CREDIT_CARD = "CreditCard"
 
-    belongs_to :user, class_name: Spree::UserClassHandle.new
+    belongs_to :user, class_name: ::Spree::UserClassHandle.new, optional: true
     belongs_to :payment_method, class_name: 'Spree::PaymentMethod'
     has_many :payments, as: :source, class_name: "Spree::Payment"
 
-    belongs_to :customer, class_name: "SolidusPaypalBraintree::Customer"
+    belongs_to :customer, class_name: "SolidusPaypalBraintree::Customer", optional: true
 
     validates :payment_type, inclusion: [PAYPAL, APPLE_PAY, CREDIT_CARD]
 
     scope(:with_payment_profile, -> { joins(:customer) })
     scope(:credit_card, -> { where(payment_type: CREDIT_CARD) })
-
-    delegate :last_4, :card_type, :expiration_month, :expiration_year, :email, :cardholder_name,
+    delegate :expiration_month, :expiration_year, :cardholder_name,
       to: :braintree_payment_method, allow_nil: true
 
-    # Aliases to match Spree::CreditCard's interface
-    alias_method :last_digits, :last_4
+    alias_attribute :card_type, :cc_type
+    alias_attribute :last_4, :last_digits
+
     alias_method :month, :expiration_month
     alias_method :year, :expiration_year
-    alias_method :cc_type, :card_type
     alias_method :name, :cardholder_name
+
+    attr_accessor :device_data, :three_d_secure_authentication_id
 
     # we are not currenctly supporting an "imported" flag
     def imported
@@ -83,7 +84,7 @@ module SolidusPaypalBraintree
     end
 
     def gateway_customer_profile_id
-      braintree_payment_method.customer_id
+      braintree_payment_method&.customer_id
     end
 
     def gateway_payment_profile_id
@@ -92,7 +93,7 @@ module SolidusPaypalBraintree
     private
 
     def braintree_payment_method
-      return unless braintree_client
+      return unless braintree_client && credit_card?
       @braintree_payment_method ||= protected_request do
         braintree_client.payment_method.find(token)
       end

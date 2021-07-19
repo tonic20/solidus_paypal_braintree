@@ -2,26 +2,35 @@ require 'solidus_support'
 
 module SolidusPaypalBraintree
   class Engine < Rails::Engine
+    include SolidusSupport::EngineExtensions
+
     isolate_namespace SolidusPaypalBraintree
     engine_name 'solidus_paypal_braintree'
+
+    ActiveSupport::Inflector.inflections do |inflect|
+      inflect.acronym 'AVS'
+    end
 
     # use rspec for tests
     config.generators do |g|
       g.test_framework :rspec
     end
 
-    initializer "register_solidus_paypal_braintree_gateway", after: "spree.register.payment_methods" do |app|
+    config.after_initialize do |app|
       app.config.spree.payment_methods << SolidusPaypalBraintree::Gateway
-      Spree::PermittedAttributes.source_attributes.concat [:nonce, :payment_type]
+      ::Spree::PermittedAttributes.source_attributes.concat [:nonce, :payment_type, :device_data, :three_d_secure_authentication_id]
     end
 
-    def self.activate
-      Dir.glob(File.join(File.dirname(__FILE__), '../../app/**/*_decorator*.rb')) do |c|
-        Rails.configuration.cache_classes ? require(c) : load(c)
+    config.to_prepare do
+      if SolidusSupport.frontend_available?
+        ::Spree::CheckoutController.helper CheckoutHelper
+        ::Spree::OrdersController.helper CheckoutHelper
+      end
+
+      if SolidusSupport.backend_available?
+        ::Spree::Admin::PaymentsController.helper AdminHelper, CheckoutHelper
       end
     end
-
-    config.to_prepare(&method(:activate).to_proc)
 
     if SolidusSupport.frontend_available?
       config.assets.precompile += [
@@ -39,17 +48,17 @@ module SolidusPaypalBraintree
 
       # We support Solidus v1.2, which requires some different markup in the
       # source form partial. This will take precedence over lib/views/backend.
-      paths["app/views"] << "lib/views/backend_v1.2" if SolidusSupport.solidus_gem_version < Gem::Version.new('1.3')
+      paths["app/views"] << "lib/views/backend_v1.2" if ::Spree.solidus_gem_version < Gem::Version.new('1.3')
 
       # Solidus v2.4 introduced preference field partials but does not ship a hash field type.
       # This is solved in Solidus v2.5.
-      if SolidusSupport.solidus_gem_version <= Gem::Version.new('2.5.0')
+      if ::Spree.solidus_gem_version <= Gem::Version.new('2.5.0')
         paths["app/views"] << "lib/views/backend_v2.4"
       end
 
       paths["app/views"] << "lib/views/backend"
 
-      initializer "solidus_paypal_braintree_admin_menu_item", after: "register_solidus_paypal_braintree_gateway" do |app|
+      initializer "solidus_paypal_braintree_admin_menu_item" do |app|
         Spree::Backend::Config.configure do |config|
           config.menu_items << config.class::MenuItem.new(
             [:braintree],

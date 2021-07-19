@@ -4,6 +4,7 @@ SolidusPaypalBraintree = {
   config: {
     paths: {
       clientTokens: Spree.pathFor('solidus_paypal_braintree/client_token'),
+      paymentMethodNonce: Spree.pathFor('solidus_paypal_braintree/payment_method_nonce'),
       transactions: Spree.pathFor('solidus_paypal_braintree/transactions')
     },
 
@@ -33,10 +34,10 @@ SolidusPaypalBraintree = {
   },
 
   showError: function(error) {
-    var $contentContainer = $("#content");
-    var $flash = $("<div class='flash error'>" + error + "</div>");
-    $contentContainer.prepend($flash);
-    $flash.show().delay(5000).fadeOut(500);
+    var $contentContainer = $(".braintree-hosted-fields");
+    var $flash = $contentContainer.find('.alert');
+    $flash.find('.alert-message').html(error);
+    $flash.show();
   },
 
   createHostedForm: function() {

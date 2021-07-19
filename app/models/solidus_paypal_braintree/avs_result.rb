@@ -41,6 +41,7 @@ module SolidusPaypalBraintree
         'I' => 'I',
         'A' => 'I'
       },
+      'B' => { 'B' => 'B' },
       nil => { nil => nil }
     }.freeze
 

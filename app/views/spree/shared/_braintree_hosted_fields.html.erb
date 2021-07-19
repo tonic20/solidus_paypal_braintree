@@ -26,6 +26,6 @@
   </div>
 
   <div class="clear"></div>
-  <input type="hidden" name="<%= prefix %>[payment_type]" value="<%= SolidusPaypalBraintree::Source::CREDIT_CARD %>">
-  <input type="hidden" id="payment_method_nonce" name="<%= prefix %>[nonce]">
+
+  <%= render 'spree/shared/braintree_js_hosted_fields', prefix: prefix, order: current_order %>
 </div>
